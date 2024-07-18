@@ -8,6 +8,7 @@ from torchvision import transforms
 from preproc import preproc
 from config import Config
 from utils import path_to_image
+import pandas as pd
 
 
 Image.MAX_IMAGE_PIXELS = None       # remove DecompressionBombWarning
@@ -52,11 +53,32 @@ class MyData(data.Dataset):
             transforms.ToTensor(),
         ][self.load_all or self.keep_size:])
         dataset_root = os.path.join(config.data_root_dir, config.task)
+
+
         # datasets can be a list of different datasets for training on combined sets.
         self.image_paths = []
         for dataset in datasets.split('+'):
             image_root = os.path.join(dataset_root, dataset, 'im')
             self.image_paths += [os.path.join(image_root, p) for p in os.listdir(image_root)]
+
+
+        print(dataset)
+        if dataset == 'DIS-TR':
+            #fpath = '/home/rafael/datasets/trainlists/2024_0626_goodboundaries_uniqpaths_long1024_sample100.txt'
+            #fpath = '/home/rafael/datasets/trainlists/2024_0626_goodboundaries_uniqpaths_long1024.txt'
+            fpath = '/home/rafael/datasets/trainlists/2024_0711_goodboundaries_tunelist_long1024.txt'
+
+            with open(fpath, 'r') as f:
+                self.image_paths = f.read().split('\n')
+                if len(self.image_paths[-1]) == 0:
+                    self.image_paths.pop(-1)
+            # self.image_paths = self.image_paths[:20]
+
+        elif dataset == 'DIS-VD':
+            fpath = '/home/rafael/datasets/evalsets/evalset-multicat-v0.1-long2048/impaths.txt'
+            dfcat = pd.read_csv("/home/rafael/datasets/evalsets/evalset-multicat-v0.2-long2048/dfcat-for-training.csv")
+            self.image_paths = dfcat.path.tolist()
+
         self.label_paths = []
         for p in self.image_paths:
             for ext in ['.png', '.jpg', '.PNG', '.JPG', '.JPEG']:

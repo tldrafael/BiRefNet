@@ -3,18 +3,21 @@
 # Settings of training & test for different tasks.
 method="$1"
 task=$(python3 config.py)
+# "DIS5K") epochs=600 && val_last=100 && step=5 ;;
 case "${task}" in
-    "DIS5K") epochs=600 && val_last=100 && step=5 ;;
+    "DIS5K") epochs=6 && val_last=1 && step=1 ;;
     "COD") epochs=150 && val_last=50 && step=5 ;;
     "HRSOD") epochs=150 && val_last=50 && step=5 ;;
     "DIS5K+HRSOD+HRS10K") epochs=250 && val_last=50 && step=5 ;;
     "P3M-10k") epochs=150 && val_last=50 && step=5 ;;
 esac
-testsets=NO     # Non-existing folder to skip.
+# testsets=NO     # Non-existing folder to skip.
+testsets=DIS-TE1
 # testsets=TE-COD10K   # for COD
 
 # Train
 devices=$2
+devices=0
 nproc_per_node=$(echo ${devices%%,} | grep -o "," | wc -l)
 
 to_be_distributed=`echo ${nproc_per_node} | awk '{if($e > 0) print "True"; else print "False";}'`

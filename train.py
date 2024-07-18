@@ -238,6 +238,7 @@ class Trainer:
                 scaler.step(self.optimizer_d)
                 scaler.update()
         else:
+            import pdb; pdb.set_trace()
             scaled_preds, class_preds_lst = self.model(inputs)
             if config.out_ref:
                 (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
@@ -295,12 +296,14 @@ class Trainer:
         for batch_idx, batch in enumerate(self.train_loader):
             self._train_batch(batch)
             # Logger
-            if batch_idx % 20 == 0:
+            # if batch_idx % 20 == 0:
+            if True:
                 info_progress = 'Epoch[{0}/{1}] Iter[{2}/{3}].'.format(epoch, args.epochs, batch_idx, len(self.train_loader))
                 info_loss = 'Training Losses'
                 for loss_name, loss_value in self.loss_dict.items():
                     info_loss += ', {}: {:.3f}'.format(loss_name, loss_value)
                 logger.info(' '.join((info_progress, info_loss)))
+            break
         info_loss = '@==Final== Epoch[{0}/{1}]  Training Loss: {loss.avg:.3f}  '.format(epoch, args.epochs, loss=self.loss_log)
         logger.info(info_loss)
 

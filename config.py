@@ -6,6 +6,7 @@ class Config():
     def __init__(self) -> None:
         # PATH settings
         self.sys_home_dir = os.environ['HOME']     # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
+        self.sys_home_dir = '/home/rafael/workspace/BiRefNet'
 
         # TASK settings
         self.task = ['DIS5K', 'COD', 'HRSOD', 'DIS5K+HRSOD+HRS10K', 'P3M-10k'][0]
@@ -19,8 +20,10 @@ class Config():
         self.prompt4loc = ['dense', 'sparse'][0]
 
         # Faster-Training settings
-        self.load_all = True
-        self.compile = True     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
+        # self.load_all = True
+        self.load_all = False
+        self.compile = False
+        # self.compile = True     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
                                 #   Machines with > 70GB CPU memory can run the whole training on DIS5K with default setting.
                                 # 2. Higher PyTorch version may fix it: https://github.com/pytorch/pytorch/issues/119607.
                                 # 3. But compile in Pytorch > 2.0.1 seems to bring no acceleration for training.
@@ -39,6 +42,7 @@ class Config():
 
         # TRAINING settings
         self.batch_size = 4
+        # self.batch_size = 16
         self.IoU_finetune_last_epochs = [
             0,
             {
@@ -49,7 +53,8 @@ class Config():
                 'P3M-10k': -20,
             }[self.task]
         ][1]    # choose 0 to skip
-        self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
+        # self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
+        self.lr = 1e-5
         self.size = 1024
         self.num_workers = max(4, self.batch_size)          # will be decrease to min(it, batch_size) at the initialization of the data_loader
 
@@ -135,16 +140,19 @@ class Config():
         self.SDPA_enabled = False    # Bugs. Slower and errors occur in multi-GPUs
 
         # others
-        self.device = [0, 'cpu'][0]     # .to(0) == .to('cuda:0')
+        # self.device = [0, 'cpu'][0]     # .to(0) == .to('cuda:0')
+        self.device = 'cuda'
 
         self.batch_size_valid = 1
         self.rand_seed = 7
         run_sh_file = [f for f in os.listdir('.') if 'train.sh' == f] + [os.path.join('..', f) for f in os.listdir('..') if 'train.sh' == f]
+        run_sh_file = ['/home/rafael/workspace/BiRefNet/train.sh']
         with open(run_sh_file[0], 'r') as f:
             lines = f.readlines()
             self.save_last = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'val_last=' in l][0].split('val_last=')[-1].split()[0])
             self.save_step = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'step=' in l][0].split('step=')[-1].split()[0])
         self.val_step = [0, self.save_step][0]
+        self.val_step = 1
 
     def print_task(self) -> None:
         # Return task for choosing settings in shell scripts.
@@ -153,4 +161,4 @@ class Config():
 if __name__ == '__main__':
     config = Config()
     config.print_task()
-    
+

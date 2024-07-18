@@ -92,7 +92,8 @@ def evaluator(gt_paths, pred_paths, metrics=['S', 'MAE', 'E', 'F', 'WF', 'HCE'],
     else:
         hce = np.float64(-1)
 
-    return em, sm, fm, mae, wfm, hce
+    return mae
+    # return em, sm, fm, mae, wfm, hce
 
 
 def _prepare_data(pred: np.ndarray, gt: np.ndarray) -> tuple:
