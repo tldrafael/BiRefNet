@@ -145,3 +145,5 @@ dmypy.json
 datasets/
 tags
 tunelist/
+alldata/
+tunelist.bkp/

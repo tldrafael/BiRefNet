@@ -1,3 +1,4 @@
+import sys
 from tqdm import tqdm
 import os
 import datetime
@@ -38,9 +39,12 @@ args = SimpleNamespace()
 args.resume = None
 args.epochs = 1000
 args.trainset = 'DIS5K'
+# args.ckpt_dir = 'alldata'
 args.ckpt_dir = 'tunelist'
 args.testsets = 'DIS-VD'
 args.dist = True
+epoch_st = 20
+args.resume = f'{args.ckpt_dir}/epoch_{epoch_st-1}.pth'
 
 
 config = Config()
@@ -59,7 +63,7 @@ if to_be_distributed:
 else:
     device = config.device
 
-epoch_st = 1
+# epoch_st = 23
 # make dir for ckpt
 os.makedirs(args.ckpt_dir, exist_ok=True)
 
@@ -113,8 +117,7 @@ def init_data_loaders(to_be_distributed):
 
 def init_models_optimizers(epochs, to_be_distributed):
     model = BiRefNet(bb_pretrained=True)
-    state_dict = torch.load('BiRefNet-massive-epoch_240.pth', map_location='cpu')
-    model.load_state_dict(state_dict)
+    # state_dict = torch.load('BiRefNet-massive-epoch_240.pth', map_location='cpu')
     if args.resume:
         if os.path.isfile(args.resume):
             logger.info("=> loading checkpoint '{}'".format(args.resume))
@@ -199,7 +202,7 @@ class Trainer:
         gts = batch[1].to(device)
         class_labels = batch[2].to(device)
         if config.use_fp16:
-            with amp.autocast(enabled=config.use_fp16):
+            with amp.autocast(enabled=config.use_fp16, dtype=torch.float16):
                 scaled_preds, class_preds_lst = self.model(inputs)
                 if config.out_ref:
                     (outs_gdt_pred, outs_gdt_label), scaled_preds = scaled_preds
@@ -302,7 +305,8 @@ class Trainer:
         global logger_loss_idx
         self.model.train()
         self.loss_dict = {}
-        if epoch > args.epochs + config.IoU_finetune_last_epochs:
+        if True:
+        # if epoch > args.epochs + config.IoU_finetune_last_epochs:
             self.pix_loss.lambdas_pix_last['bce'] *= 0
             self.pix_loss.lambdas_pix_last['ssim'] *= 1
             self.pix_loss.lambdas_pix_last['iou'] *= 0.5
@@ -323,6 +327,7 @@ class Trainer:
             #        info_loss += ', {}: {:.3f}'.format(loss_name, loss_value)
             #    logger.info(' '.join((info_progress, info_loss)))
 
+            break
             #if batch_idx == 40:
             #    break
 
@@ -391,6 +396,8 @@ def main():
         data_loaders=init_data_loaders(to_be_distributed),
         model_opt_lrsch=init_models_optimizers(args.epochs, to_be_distributed)
     )
+    #trainer.validate_model(3)
+    #sys.exit(0)
 
     for epoch in range(epoch_st, args.epochs+1):
         train_loss = trainer.train_epoch(epoch)

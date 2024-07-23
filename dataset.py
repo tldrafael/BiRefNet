@@ -67,7 +67,8 @@ class MyData(data.Dataset):
             #fpath = '/home/rafael/datasets/trainlists/2024_0626_goodboundaries_uniqpaths_long1024_sample100.txt'
             #fpath = '/home/rafael/datasets/trainlists/2024_0626_goodboundaries_uniqpaths_long1024.txt'
             fpath = '/home/rafael/datasets/trainlists/2024_0711_goodboundaries_tunelist_long1024.txt'
-
+            # fpath = '/home/rafael/datasets/trainlists/2024_0626_goodboundaries_uniqpaths_long1024_reduceLogos.txt'
+ 
             with open(fpath, 'r') as f:
                 self.image_paths = f.read().split('\n')
                 if len(self.image_paths[-1]) == 0:
@@ -78,6 +79,9 @@ class MyData(data.Dataset):
             fpath = '/home/rafael/datasets/evalsets/evalset-multicat-v0.1-long2048/impaths.txt'
             dfcat = pd.read_csv("/home/rafael/datasets/evalsets/evalset-multicat-v0.2-long2048/dfcat-for-training.csv")
             self.image_paths = dfcat.path.tolist()
+            # from glob import iglob
+            # self.image_paths = list(iglob("/home/rafael/datasets/evalsets/evalset-multicat-v0.2-long2048/im/*"))
+
 
         self.label_paths = []
         for p in self.image_paths:

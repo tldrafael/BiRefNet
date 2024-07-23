@@ -137,6 +137,7 @@ class Config():
         self.verbose_eval = True
         self.only_S_MAE = False
         self.use_fp16 = False   # Bugs. It may cause nan in training.
+        # self.use_fp16 = True # Bugs. It may cause nan in training.
         self.SDPA_enabled = False    # Bugs. Slower and errors occur in multi-GPUs
 
         # others
